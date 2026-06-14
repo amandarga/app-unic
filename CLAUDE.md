@@ -77,6 +77,23 @@ Se algo é usado por duas ou mais features, sobe para `src/components/`,
 - Toda leitura/escrita de armazenamento passa pelo hook `useStorage`, nunca
   chamando o AsyncStorage cru espalhado pelo código.
 
+## Manutenção do ESTADO-DO-PROJETO.md
+
+Ao final de **toda mudança significativa**, atualize o `ESTADO-DO-PROJETO.md`
+(na raiz) para refletir o novo estado.
+
+**Conta como mudança significativa:**
+- criar ou avançar uma feature (aba);
+- instalar, remover ou atualizar dependência, ou trocar de SDK;
+- mudar a estrutura de pastas ou de rotas;
+- tomar uma decisão de arquitetura.
+
+**NÃO conta:** ajuste de estilo, correção de typo, refactor interno pequeno.
+
+Ao atualizar, mexa **só no que mudou** e mantenha o arquivo curto (é um snapshot,
+não documentação). Não despeje código nele. Não tocar no `app-unic-contexto.md`
+(é mantido à mão pela Amanda).
+
 ## Comandos
 
 ```
