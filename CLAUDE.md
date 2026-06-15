@@ -1,23 +1,45 @@
 # Meu App Pessoal
 
-App nativo (React Native + Expo) de uso pessoal, com várias abas independentes.
-Cada aba é uma "feature" autocontida e diferente das outras. O app é só meu — não
-tem usuários externos, não precisa de login, e os dados ficam guardados localmente
-no meu próprio aparelho.
+App nativo (React Native + Expo) de uso pessoal. É um **lançador (launcher)**:
+a tela inicial (Home) é uma **grade de cards**, e cada card é um **mini-app** que
+abre em tela cheia. O app é só meu — não tem usuários externos, não precisa de
+login, e os dados ficam guardados localmente no meu próprio aparelho.
 
 ## Visão geral
 
-A ideia é ter um único app que reúne coisas variadas que eu uso no dia a dia.
-Exemplos de abas: rotina de skincare, tabela de figurinhas da Copa, tarefas do
-trabalho. A lista de abas vai crescer com o tempo, então o projeto precisa ser
-fácil de estender: adicionar uma aba nova não pode quebrar nem mexer nas outras.
+A Home funciona como a tela inicial do celular: uma grade de mini-apps + um card
+**"Novo"** no fim. Uma **barra global inferior** persiste em todas as telas (na
+Home e dentro de cada mini-app). A lista de mini-apps cresce com o tempo, então o
+projeto precisa ser fácil de estender: adicionar um **tipo** novo não pode
+quebrar nem mexer nos outros.
+
+A UI/UX completa da Fase 1 (a "casca") está em `assets/docs/ESPEC-UI-Fase-1.PDF`.
+
+## Conceitos: tipo × instância
+
+- **Tipo (template):** o modelo de um mini-app (ex.: `checklist`, `notas`,
+  `livros`, `figurinhas`, `skincare`). Define a **cor** de identificação, o
+  **ícone padrão** e o comportamento de dentro.
+- **Instância:** um mini-app criado a partir de um tipo, com **nome e ícone
+  próprios** (ex.: "Notas de estudos" é uma instância de `notas`). Pode haver
+  **várias instâncias do mesmo tipo**.
+- **Duas naturezas de tipo:**
+  - **Instanciáveis** — aparecem no "+ Novo"; o usuário cria quantos quiser
+    (`checklist`, `notas`, `livros`).
+  - **Sob medida (bespoke)** — codados à mão e semeados no app, **não** aparecem
+    no "+ Novo" (`figurinhas`, `skincare`).
+- A **cor vem sempre do tipo**, nunca da instância. Acessibilidade: a cor nunca
+  aparece sozinha — sempre acompanhada da etiqueta do tipo no card.
 
 ## Stack
 
-- **React Native + Expo** (template default, SDK atual) — app nativo de verdade.
+- **React Native + Expo** (SDK 54) — app nativo de verdade.
 - **TypeScript** em todo o código.
-- **Expo Router** — navegação file-based. Cada arquivo em `app/` é uma tela.
-- **Abas inferiores** via o layout de tabs do Expo Router.
+- **Expo Router** — navegação file-based. Cada arquivo em `app/` é uma rota.
+- **Barra global inferior** persistente: `[ Início · slot · slot · Perfil ]`.
+  Início e Perfil são âncoras fixas; os 2 slots do meio são customizáveis
+  (função "Buscar", atalho pra um app fixado, ou vazio). **Não** é uma tab bar
+  de seções.
 - **Persistência local** — começa com AsyncStorage
   (`@react-native-async-storage/async-storage`), via um hook `useStorage`.
   Se uma feature precisar guardar muito dado (ex.: álbum de figurinhas com
@@ -31,40 +53,52 @@ fácil de estender: adicionar uma aba nova não pode quebrar nem mexer nas outra
 
 ```
 app/                   # SÓ as telas/rotas (finas), via Expo Router
-  _layout.tsx          # stack raiz
-  (tabs)/
-    _layout.tsx        # define as abas e seus ícones
-    index.tsx          # tela: Skincare
-    figurinhas.tsx     # tela: Figurinhas
-    tarefas.tsx        # tela: Tarefas
+  _layout.tsx          # stack raiz + barra global persistente
+  index.tsx            # Home (launcher): grade de cards + card "Novo"
+  app/
+    [id].tsx           # abre um mini-app pelo id e delega ao tipo da instância
 src/                   # toda a lógica de verdade vive aqui
-  features/            # cada aba isolada
-    skincare/
-      SkincareScreen.tsx
+  features/            # cada TIPO isolado (uma pasta por tipo)
+    checklist/
+      ChecklistScreen.tsx
       components/
       hooks/
       types.ts
+    notas/
+    livros/
     figurinhas/
-    tarefas/
-  components/          # componentes compartilhados
+    skincare/
+  components/          # infra compartilhada: launcher, card, barra global, modal "+ Novo"
   hooks/               # hooks compartilhados (ex.: useStorage)
-  lib/                 # utilidades genéricas
+  lib/                 # utilidades + registro de tipos (mapa tipo → cor/ícone/...)
 ```
 
-Regra de ouro: **os arquivos em `app/` são finos.** Eles só importam e renderizam
-a tela correspondente de `src/features/<nome>/`. Toda a lógica, estado e
-componentes de uma feature moram dentro da pasta dela em `src/features/`.
-Se algo é usado por duas ou mais features, sobe para `src/components/`,
-`src/hooks/` ou `src/lib/`.
+Regra de ouro: **os arquivos em `app/` são finos.** Cada **tipo** é uma feature
+isolada em `src/features/<tipo>/` — toda a lógica, estado e componentes do tipo
+moram lá. O **launcher (Home), o registro de apps, a barra global e o fluxo
+"+ Novo"** são **infra compartilhada** (`src/components/`, `src/hooks/`,
+`src/lib/`). Se algo é usado por dois ou mais tipos, sobe para a infra.
 
-## Como adicionar uma aba nova
+## Como adicionar um tipo novo
 
-1. Criar `src/features/<nome>/` com `‹Nome›Screen.tsx` e o que a feature precisar.
-2. Criar a tela fina em `app/(tabs)/<nome>.tsx` que só renderiza essa screen.
-3. Registrar a aba (ícone e título) em `app/(tabs)/_layout.tsx`.
-4. Guardar o estado com `useStorage` usando chave com prefixo próprio, ex.:
-   `skincare:rotina`, `figurinhas:album`, `tarefas:lista`.
-5. Não tocar no código das outras features.
+1. Criar `src/features/<tipo>/` com `‹Tipo›Screen.tsx` e o que o tipo precisar.
+2. Registrar o tipo no mapa de tipos em `src/lib/` (id, nome, descrição, **cor**,
+   ícone padrão, `instanciavel`).
+3. Ligar o tipo ao renderizador da rota `app/app/[id].tsx`, que delega pelo
+   `instance.tipo`.
+4. Se for **instanciável**, ele passa a aparecer no "+ Novo" automaticamente;
+   se for **sob medida**, semear a(s) instância(s) à mão.
+5. Persistir o conteúdo do mini-app com `useStorage`, chave com prefixo por
+   instância, ex.: `app:<id>:itens`.
+6. Não tocar no código dos outros tipos.
+
+## Persistência (estado da casca)
+
+- `apps:registro` → `AppInstance[]` (os mini-apps da Home).
+- `navbar:slots` → estado dos 2 slots flexíveis da barra global.
+- A **cor não é guardada na instância** — vem do tipo.
+- Conteúdo de cada mini-app: prefixo próprio por instância (`app:<id>:...`),
+  definido na fase dos templates.
 
 ## Convenções
 
@@ -104,16 +138,20 @@ npm run lint           # checagem de lint
 
 ## Features atuais
 
-- [ ] Skincare — rotina (manhã/noite), com passos marcáveis.
-- [ ] Figurinhas da Copa — álbum/tabela do que tenho, falta e repetidas.
-- [ ] Tarefas do trabalho — lista de tarefas simples.
+Tipos **instanciáveis** (aparecem no "+ Novo"):
+- [ ] Checklist — itens pra marcar.
+- [ ] Notas — texto livre.
+- [ ] Livros — marcações e resenhas.
 
-(Marcar conforme forem ficando prontas. Adicionar novas linhas aqui ao criar
-abas novas.)
+Tipos **sob medida** (semeados à mão, fora do "+ Novo"):
+- [ ] Figurinhas da Copa — álbum/tabela: tenho, falta, repetidas.
+- [ ] Skincare — rotina (manhã/noite), com passos marcáveis.
+
+(Marcar conforme forem ficando prontos. Adicionar novos tipos aqui ao criá-los.)
 
 ## O que NÃO fazer sem eu pedir
 
 - Adicionar backend, banco remoto ou login.
 - Instalar bibliotecas pesadas para problemas simples.
-- Refatorar várias features de uma vez. Mudanças focadas, uma feature por vez.
+- Refatorar vários tipos de uma vez. Mudanças focadas, um tipo por vez.
 - Ejetar do fluxo gerenciado do Expo (bare workflow) sem necessidade real.
