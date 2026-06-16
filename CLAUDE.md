@@ -114,7 +114,7 @@ moram lá. O **launcher (Home), o registro de apps, a barra global e o fluxo
 ## Manutenção do ESTADO-DO-PROJETO.md
 
 Ao final de **toda mudança significativa**, atualize o `ESTADO-DO-PROJETO.md`
-(na raiz) para refletir o novo estado.
+(em `assets/docs/`) para refletir o novo estado.
 
 **Conta como mudança significativa:**
 - criar ou avançar uma feature (aba);
@@ -124,9 +124,10 @@ Ao final de **toda mudança significativa**, atualize o `ESTADO-DO-PROJETO.md`
 
 **NÃO conta:** ajuste de estilo, correção de typo, refactor interno pequeno.
 
-Ao atualizar, mexa **só no que mudou** e mantenha o arquivo curto (é um snapshot,
-não documentação). Não despeje código nele. Não tocar no `app-unic-contexto.md`
-(é mantido à mão pela Amanda).
+Ao atualizar: mantenha o **snapshot** (topo) curto, mexendo só no que mudou; e, **ao
+subir uma versão**, acrescente um **bloco detalhado** no `## Histórico de versões`
+(no fim do arquivo) descrevendo o que aquela versão fez. Não despeje código.
+Não tocar no `app-unic-contexto.md` (é mantido à mão pela Amanda).
 
 ## Comandos
 

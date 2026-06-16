@@ -1,7 +1,8 @@
 # Estado do Projeto — app-unic
 
-Snapshot factual do estado atual. Mantido automaticamente a cada mudança
-significativa (ver regra no `CLAUDE.md`).
+Documentação viva do projeto: um **snapshot** do estado atual (estrutura, stack,
+capacidades, decisões) no topo + um **histórico detalhado por versão** no fim.
+Atualizado a cada mudança significativa (ver regra no `CLAUDE.md`).
 
 ## Estrutura
 
@@ -43,7 +44,7 @@ src/
   só via o hook `useStorage`.
 - **`expo-blur`** instalado (fundo embaçado do "+ Novo").
 
-## Estado (V0.2 — persistência + "+ Novo")
+## Estado atual (V0.2.1)
 
 A casca é navegável **e já cria/persiste** mini-apps (ainda sem editar/excluir).
 
@@ -85,18 +86,67 @@ A casca é navegável **e já cria/persiste** mini-apps (ainda sem editar/exclui
 - Ícones via **emoji**; alias **`@/` → `src/`**; rotas finas em `app/`; tipos isolados
   em `src/features/<tipo>/`; launcher/card/barra/modal são infra em `src/components`.
 
-## Últimas mudanças grandes
+## Histórico de versões
 
-1. **Moldura do "+ Novo":** virou **modal centralizado** (card no meio + fundo
-   embaçado com `expo-blur`), substituindo a folha de baixo que travava no rodapé no
-   iPhone/tablet. `GlobalBar` no grupo `(main)`; `novo` como `transparentModal`.
-   Conteúdo das 2 etapas reaproveitado.
-2. **V0.2:** persistência (`useStorage` + AsyncStorage; `useApps` sobre
-   `apps:registro` com `addApp`) + fluxo "+ Novo" em 2 etapas que cria e persiste.
-3. **V0.1:** Home/launcher navegável (grade + "Novo" + barra global + mini-app em
-   tela cheia); substituiu o scaffold de 3 abas.
-4. Decisão de arquitetura: o app é um **lançador** (docs reconciliados).
-5. Downgrade SDK 56 → 54 + fix do tema (`@react-navigation/native`).
+Registro detalhado, em ordem cronológica (mais antigo primeiro). Ao subir uma
+versão nova, adicione um bloco no fim.
+
+### Base — setup (pré-launcher)
+- Scaffold inicial Expo com 3 abas (Skincare/Figurinhas/Tarefas) — depois
+  substituído pelo modelo de lançador.
+- **Downgrade Expo SDK 56 → 54** (compatível com o Expo Go da App Store):
+  `expo ^54`, `react-native` 0.81.5, `react` 19.1.0, `expo-router` 6; removidos
+  `@expo/ui`, `expo-glass-effect`, `expo-symbols` e arquivos órfãos do template;
+  ajuste de `typescript`/`@types/react`.
+- **Fix de tema:** `ThemeProvider`/`DarkTheme`/`DefaultTheme` passam a vir de
+  `@react-navigation/native` (no SDK 54 não são mais reexportados de `expo-router`).
+- **Decisão de arquitetura:** o app vira um **lançador** (Home em grade de cards +
+  barra global; tipos × instâncias). Docs (`CLAUDE.md`/`ESTADO`) reconciliados;
+  spec em `assets/docs/ESPEC-UI-Fase-1.PDF`.
+
+### V0.1 — "A Home que abre"
+A casca visível e navegável, sem persistência e sem criar/editar.
+- **Catálogo de tipos** (`src/lib/`): `types.ts` (`AppTypeDef`, `AppInstance`,
+  `NavSlot`, `NavbarState`) + `appCatalog.ts` (5 tipos com cor/emoji/`instanciavel`).
+- **`useApps()`** com semente fixa (em memória, sem storage) — costura de dados.
+- **Componentes** (`src/components/`): `AppCard` (faixa de cor + etiqueta sempre +
+  emoji + nome), `NewCard`, `GlobalBar` (`Início·Buscar·Slot·Perfil`, só Início
+  funciona), `LauncherScreen` (grade + topo inerte), `MiniAppHost` (nome + tipo +
+  placeholder).
+- **Rotas finas:** `app/index.tsx` (Home), `app/app/[id].tsx` (mini-app),
+  `app/_layout.tsx` com a barra global. Removeu o scaffold de 3 abas e a feature
+  `tarefas`; `skincare`/`figurinhas` viraram stubs.
+
+### V0.2 — Persistência + "+ Novo"
+A casca passa a **criar e persistir** mini-apps (ainda sem editar/excluir).
+- **`@react-native-async-storage/async-storage`** instalado.
+- **`useStorage`** (`src/hooks/`): genérico `[valor, setValor, carregando]`, JSON,
+  semente-no-primeiro-uso e **sincronia entre telas por chave**; único ponto de
+  acesso ao AsyncStorage.
+- **`useApps()`** passa a ler/gravar `apps:registro` via `useStorage` e ganha
+  **`addApp()`**; retorna `{ apps, addApp, carregando }`. `src/lib/id.ts` (`gerarId`).
+- **Fluxo "+ Novo"** (rota modal): `NovoAppScreen` (2 etapas + indicador),
+  `EtapaTipo` (só instanciáveis), `DetalhesForm` **reutilizável** (prévia ao vivo
+  via `AppCard`, nome, fileira de emojis, cor read-only) → `addApp()` cria e persiste.
+- `AppCard` ganha prop `disabled` (prévia não-tocável); `GlobalBar`: ícone do slot
+  vazio vira **quadradinho tracejado**.
+
+### V0.2.1 — "+ Novo" como modal centralizado
+Só a moldura do "+ Novo" (conteúdo das etapas reaproveitado).
+- **`expo-blur`** instalado: fundo embaçado (Home + barra atrás).
+- **Reorg de layout em 2 níveis:** `GlobalBar` movida pro grupo `app/(main)/`
+  (envolve Home + mini-apps); rota `novo` vira **`transparentModal`** no layout raiz,
+  acima do `(main)`, por isso cobre/embaça a barra. URLs inalteradas (`git mv`).
+- **"+ Novo" deixa de ser folha de baixo** (travava colada no rodapé no
+  iPhone/tablet) e vira **modal CENTRALIZADO**: card no meio (largura ~90%, máx
+  420px, `maxHeight` 85% com `ScrollView`), dentro de `KeyboardAvoidingView`
+  (`padding` no iOS); tocar fora fecha. Cabeçalho com "Etapa X de 2" + barra de
+  progresso.
+- **Fix nativo:** `flexShrink:1` (não `flex:1`) no card/scrolls — `flex:1` colapsava
+  a altura no Yoga nativo (pai de altura automática), por isso só o blur aparecia.
+- **Organização do repo:** documentação movida pra `assets/docs/`
+  (`ESTADO-DO-PROJETO.md`, `PADROES.md`); raiz só com `README.md` + os especiais
+  `CLAUDE.md`/`AGENTS.md`.
 
 ## Pendências / pontos de atenção
 

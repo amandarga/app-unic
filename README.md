@@ -1,56 +1,25 @@
-# Welcome to your Expo app 👋
+# App Unic
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App nativo pessoal (React Native + Expo, SDK 54) — um **lançador**: a Home é uma
+grade de cards (mini-apps), cada card abre em tela cheia, com uma barra global
+inferior persistente. Uso próprio, sem login, dados locais no aparelho.
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Rodar
 
 ```bash
-npm run reset-project
+npm install
+npm run dev      # abre o Expo (QR code p/ Expo Go)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Testar no celular: instale o **Expo Go** (App Store / Play Store) e escaneie o QR
+(mesma rede Wi-Fi). No terminal: `w` abre no navegador, `a`/`i` em emulador.
 
-### Other setup steps
+## Documentação
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+- [Estado do projeto](assets/docs/ESTADO-DO-PROJETO.md) — snapshot atual (estrutura,
+  stack, o que está pronto, pendências).
+- [Padrões de trabalho](assets/docs/PADROES.md) — fluxo, comandos e convenções fixas.
+- [Especificação de UI — Fase 1](assets/docs/ESPEC-UI-Fase-1.PDF) — a "casca".
+- `CLAUDE.md` (raiz) — instruções de arquitetura para o assistente de código.
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+A documentação do app fica em `assets/docs/`.
