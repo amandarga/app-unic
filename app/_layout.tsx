@@ -21,6 +21,14 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="index" />
               <Stack.Screen name="app/[id]" />
+              <Stack.Screen
+                name="novo"
+                options={{
+                  presentation: 'formSheet',
+                  sheetGrabberVisible: true,
+                  sheetAllowedDetents: [1],
+                }}
+              />
             </Stack>
           </View>
           <GlobalBar />

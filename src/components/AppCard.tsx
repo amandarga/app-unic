@@ -8,22 +8,24 @@ type Props = {
   app: AppInstance;
   width: number;
   onPress?: () => void;
+  disabled?: boolean; // prévia não-tocável (etapa 2 do "+ Novo")
 };
 
 // Card de mini-app (spec 3.2): faixa de cor + etiqueta do tipo + emoji + nome.
 // A etiqueta aparece SEMPRE (regra "cor nunca sozinha"). Reutilizável.
-export function AppCard({ app, width, onPress }: Props) {
+export function AppCard({ app, width, onPress, disabled }: Props) {
   const theme = useTheme();
   const tipo = getAppType(app.tipo);
 
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="button"
+      disabled={disabled}
+      accessibilityRole={disabled ? undefined : 'button'}
       accessibilityLabel={`${app.nome}, tipo ${tipo.nome}`}
       style={({ pressed }) => [
         styles.card,
-        { width, backgroundColor: theme.backgroundElement, opacity: pressed ? 0.7 : 1 },
+        { width, backgroundColor: theme.backgroundElement, opacity: pressed && !disabled ? 0.7 : 1 },
       ]}>
       <View style={[styles.faixa, { backgroundColor: tipo.cor }]}>
         <Text style={styles.etiqueta} numberOfLines={1}>

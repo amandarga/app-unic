@@ -1,4 +1,5 @@
 import { usePathname, useRouter } from 'expo-router';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -7,7 +8,8 @@ import { useTheme } from '@/hooks/use-theme';
 type Item = {
   key: string;
   label: string;
-  icone: string;
+  icone?: string;
+  iconeNode?: ReactNode;
   onPress?: () => void;
   ativo?: boolean;
   inerte?: boolean;
@@ -15,7 +17,8 @@ type Item = {
 
 // Barra global persistente (spec 4): [ Início · Buscar · Slot · Perfil ].
 // Aparece igual na Home e dentro de cada mini-app. Na v0.1 só Início funciona;
-// os demais ficam visuais/inertes.
+// os demais ficam visuais/inertes. O "slot" mostra um quadradinho tracejado
+// (placeholder vazio, fig-1) — não confundir com "adicionar".
 export function GlobalBar() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -25,7 +28,12 @@ export function GlobalBar() {
   const itens: Item[] = [
     { key: 'inicio', label: 'Início', icone: '🏠', onPress: () => router.replace('/'), ativo: pathname === '/' },
     { key: 'buscar', label: 'Buscar', icone: '🔍', inerte: true },
-    { key: 'slot', label: 'Slot', icone: '➕', inerte: true },
+    {
+      key: 'slot',
+      label: 'Slot',
+      inerte: true,
+      iconeNode: <View style={[styles.slotVazio, { borderColor: theme.textSecondary }]} />,
+    },
     { key: 'perfil', label: 'Perfil', icone: '👤', inerte: true },
   ];
 
@@ -48,7 +56,11 @@ export function GlobalBar() {
           accessibilityState={{ selected: item.ativo, disabled: item.inerte }}
           accessibilityLabel={item.label}
           style={styles.item}>
-          <Text style={[styles.icone, item.inerte && styles.inerte]}>{item.icone}</Text>
+          {item.iconeNode ? (
+            <View style={[styles.iconeWrap, item.inerte && styles.inerte]}>{item.iconeNode}</View>
+          ) : (
+            <Text style={[styles.icone, item.inerte && styles.inerte]}>{item.icone}</Text>
+          )}
           <Text
             style={[
               styles.label,
@@ -78,6 +90,17 @@ const styles = StyleSheet.create({
   },
   icone: {
     fontSize: 20,
+  },
+  iconeWrap: {
+    height: 20,
+    justifyContent: 'center',
+  },
+  slotVazio: {
+    width: 18,
+    height: 18,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderRadius: 4,
   },
   inerte: {
     opacity: 0.4,

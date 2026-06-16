@@ -1,8 +1,10 @@
-import type { AppInstance } from '@/lib/types';
+import { useStorage } from '@/hooks/useStorage';
+import { gerarId } from '@/lib/id';
+import type { AppInstance, AppTypeId } from '@/lib/types';
 
-// Semente FIXA (v0.1): ainda SEM AsyncStorage. Este hook é a costura — na v0.2
-// ele passa a ler/escrever no storage sem a Home precisar mudar.
-const SEED: AppInstance[] = [
+// Semente usada no primeiro uso (storage vazio). A partir daí o registro vive no
+// AsyncStorage, sob a chave 'apps:registro'.
+const SEMENTE: AppInstance[] = [
   { id: 'mercado', tipo: 'checklist', nome: 'Mercado', icone: '🛒', ordem: 0, criadoEm: 0 },
   { id: 'estudos', tipo: 'notas', nome: 'Notas de estudos', icone: '📝', ordem: 1, criadoEm: 0 },
   { id: 'leituras', tipo: 'livros', nome: 'Minhas leituras', icone: '📚', ordem: 2, criadoEm: 0 },
@@ -10,10 +12,29 @@ const SEED: AppInstance[] = [
   { id: 'rotina', tipo: 'skincare', nome: 'Skincare', icone: '🧴', ordem: 4, criadoEm: 0 },
 ];
 
-export function useApps(): AppInstance[] {
-  return [...SEED].sort((a, b) => a.ordem - b.ordem);
+export type NovoAppInput = { tipo: AppTypeId; nome: string; icone: string };
+
+export function useApps() {
+  const [registro, setRegistro, carregando] = useStorage<AppInstance[]>('apps:registro', SEMENTE);
+  const apps = [...registro].sort((a, b) => a.ordem - b.ordem);
+
+  // Cria uma nova instância (id/ordem/criadoEm preenchidos) e persiste.
+  const addApp = (input: NovoAppInput): AppInstance => {
+    const nova: AppInstance = {
+      id: gerarId(),
+      tipo: input.tipo,
+      nome: input.nome,
+      icone: input.icone,
+      ordem: registro.length,
+      criadoEm: Date.now(),
+    };
+    setRegistro([...registro, nova]);
+    return nova;
+  };
+
+  return { apps, addApp, carregando };
 }
 
 export function useApp(id: string): AppInstance | undefined {
-  return useApps().find((app) => app.id === id);
+  return useApps().apps.find((app) => app.id === id);
 }

@@ -1,6 +1,5 @@
 import { useRouter } from 'expo-router';
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,7 +23,7 @@ export function LauncherScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const apps = useApps();
+  const { apps } = useApps();
 
   const colunas = width >= 600 ? 5 : 3; // responsivo (mais colunas no tablet)
   const cardWidth = Math.floor((width - PADDING * 2 - GAP * (colunas - 1)) / colunas);
@@ -54,10 +53,7 @@ export function LauncherScreen() {
             onPress={() => router.push({ pathname: '/app/[id]', params: { id: app.id } })}
           />
         ))}
-        <NewCard
-          width={cardWidth}
-          onPress={() => Alert.alert('Em breve', 'Criar um novo mini-app chega na próxima versão.')}
-        />
+        <NewCard width={cardWidth} onPress={() => router.push('/novo')} />
       </ScrollView>
     </View>
   );
