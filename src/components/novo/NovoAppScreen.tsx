@@ -29,7 +29,16 @@ export function NovoAppScreen() {
             {etapa === 1 ? 'Cancelar' : '‹ Voltar'}
           </Text>
         </Pressable>
-        <Text style={[styles.passo, { color: theme.textSecondary }]}>{etapa} de 2</Text>
+        <Text style={[styles.passo, { color: theme.textSecondary }]}>Etapa {etapa} de 2</Text>
+      </View>
+
+      <View style={[styles.progressoTrilha, { backgroundColor: theme.backgroundElement }]}>
+        <View
+          style={[
+            styles.progressoBarra,
+            { width: etapa === 1 ? '50%' : '100%', backgroundColor: theme.text },
+          ]}
+        />
       </View>
 
       {etapa === 1 ? (
@@ -56,7 +65,9 @@ export function NovoAppScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  // flexShrink (não flex:1) pra abraçar o conteúdo e encolher só ao bater o
+  // maxHeight do card. flex:1 colapsaria a altura no Yoga nativo (pai auto).
+  container: { flexShrink: 1 },
   cabecalho: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,4 +83,13 @@ const styles = StyleSheet.create({
   },
   acaoTxt: { fontSize: 16, fontWeight: '600' },
   passo: { fontSize: 13, fontWeight: '600', paddingHorizontal: 8 },
+  progressoTrilha: {
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: 16,
+    marginBottom: 4,
+    overflow: 'hidden',
+  },
+  progressoBarra: { height: 4, borderRadius: 2 },
 });
+

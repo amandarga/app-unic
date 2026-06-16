@@ -1,45 +1,27 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, useColorScheme } from 'react-native';
+import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { GlobalBar } from '@/components/GlobalBar';
-import { Colors } from '@/constants/theme';
-
-// Stack raiz + barra global persistente. A GlobalBar fica FORA do Stack (por
-// baixo), então aparece igual na Home e por cima de cada mini-app em tela cheia.
+// Stack raiz. Envolve o grupo (main) (Home + mini-apps + barra global) e a rota
+// "novo", que é apresentada como transparentModal POR CIMA do (main) — assim ela
+// cobre/embaça a barra global.
 export default function RootLayout() {
   const scheme = useColorScheme() ?? 'light';
-  const colors = Colors[scheme];
 
   return (
     <SafeAreaProvider>
       <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <View style={styles.content}>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="app/[id]" />
-              <Stack.Screen
-                name="novo"
-                options={{
-                  presentation: 'formSheet',
-                  sheetGrabberVisible: true,
-                  sheetAllowedDetents: [1],
-                }}
-              />
-            </Stack>
-          </View>
-          <GlobalBar />
-        </View>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(main)" />
+          <Stack.Screen
+            name="novo"
+            options={{ presentation: 'transparentModal', animation: 'fade' }}
+          />
+        </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { flex: 1 },
-});

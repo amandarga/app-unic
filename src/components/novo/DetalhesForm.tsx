@@ -32,7 +32,10 @@ export function DetalhesForm({ tipo, nomeInicial, iconeInicial, submitLabel, onS
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.conteudo}
+      keyboardShouldPersistTaps="handled">
       <View style={styles.previaWrap}>
         <AppCard app={previa} width={120} disabled />
       </View>
@@ -95,6 +98,7 @@ export function DetalhesForm({ tipo, nomeInicial, iconeInicial, submitLabel, onS
 }
 
 const styles = StyleSheet.create({
+  scroll: { flexShrink: 1 },
   conteudo: { padding: 16, gap: 8, paddingBottom: 40 },
   previaWrap: { alignItems: 'center', paddingVertical: 8 },
   rotulo: { fontSize: 13, fontWeight: '700', marginTop: 8 },

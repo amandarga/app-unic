@@ -12,7 +12,10 @@ export function EtapaTipo({ onSelecionar }: Props) {
   const tipos = APP_TYPE_LIST.filter((t) => t.instanciavel);
 
   return (
-    <ScrollView contentContainerStyle={styles.lista} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={styles.scroll}
+      contentContainerStyle={styles.lista}
+      keyboardShouldPersistTaps="handled">
       <Text style={[styles.titulo, { color: theme.text }]}>Escolha o tipo</Text>
       {tipos.map((tipo) => (
         <Pressable
@@ -38,6 +41,7 @@ export function EtapaTipo({ onSelecionar }: Props) {
 }
 
 const styles = StyleSheet.create({
+  scroll: { flexShrink: 1 },
   lista: { padding: 16, gap: 10 },
   titulo: { fontSize: 15, fontWeight: '700', marginBottom: 4 },
   linha: {

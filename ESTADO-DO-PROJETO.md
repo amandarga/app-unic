@@ -7,11 +7,13 @@ significativa (ver regra no `CLAUDE.md`).
 
 ```
 app/                       # rotas finas (Expo Router)
-  _layout.tsx              # Stack raiz + GlobalBar persistente
-  index.tsx               -> LauncherScreen (Home)
-  novo.tsx                -> NovoAppScreen (modal "formSheet")
-  app/
-    [id].tsx              -> MiniAppHost (mini-app em tela cheia)
+  _layout.tsx              # Stack raiz: grupo (main) + rota novo (transparentModal)
+  novo.tsx                -> BlurView (fundo) + card centralizado + NovoAppScreen
+  (main)/                  # grupo: Home + mini-apps + GlobalBar (não muda a URL)
+    _layout.tsx            # View{ Stack(index, app/[id]) + GlobalBar persistente }
+    index.tsx             -> LauncherScreen (Home)
+    app/
+      [id].tsx            -> MiniAppHost (mini-app em tela cheia)
 src/
   lib/
     types.ts              # AppTypeDef, AppInstance, NavSlot, NavbarState (spec §8)
@@ -39,6 +41,7 @@ src/
 - Tema: `@react-navigation/native` (v7) + hook próprio `useTheme`/`Colors`
 - **Persistência: `@react-native-async-storage/async-storage` instalado**, acessado
   só via o hook `useStorage`.
+- **`expo-blur`** instalado (fundo embaçado do "+ Novo").
 
 ## Estado (V0.2 — persistência + "+ Novo")
 
@@ -48,7 +51,9 @@ A casca é navegável **e já cria/persiste** mini-apps (ainda sem editar/exclui
   sincronia entre telas por chave). `useApps` lê/grava `apps:registro`.
 - **Home (launcher):** grade lendo de `useApps()` + card "Novo". Barra superior
   (pesquisar/editar) ainda só visual.
-- **"+ Novo" (funcional):** card "Novo" abre folha modal (`formSheet`) em 2 etapas
+- **"+ Novo" (funcional):** card "Novo" abre um **modal centralizado** sobre fundo
+  **embaçado** (Home + barra atrás): card no meio da tela (largura ~90%, máx 420px),
+  altura = conteúdo (máx 85%, com `ScrollView` interno), tocar fora fecha. Em 2 etapas
   — escolher tipo (só instanciáveis) → detalhes (prévia ao vivo reusando `AppCard`,
   nome, fileira de emojis, cor read-only) → "Criar app" persiste e aparece na Home.
 - **Mini-app em tela cheia** (`/app/[id]`): nome + tipo no topo + placeholder.
@@ -67,7 +72,14 @@ A casca é navegável **e já cria/persiste** mini-apps (ainda sem editar/exclui
   em sincronia (app criado no modal aparece na Home na hora). Semente-no-primeiro-uso.
 - **`useApps()` devolve `{ apps, addApp, carregando }`** — é a costura de dados.
 - **`DetalhesForm` é reutilizável** (será o formulário de editar na v0.3).
-- "+ Novo" usa `presentation: 'formSheet'` (puxador + arrastar-pra-baixo nativos).
+- **Layout em 2 níveis:** a `GlobalBar` vive no grupo **`app/(main)/_layout.tsx`**
+  (envolve Home + mini-apps); a rota **`novo`** é **`transparentModal` no layout raiz**,
+  acima do `(main)`, por isso cobre/embaça a barra. URLs não mudam (grupo entre `()`).
+- **"+ Novo" = modal CENTRALIZADO** (não folha de baixo — a folha travava colada no
+  rodapé no iPhone/tablet). `BlurView` (expo-blur) de fundo + card centrado
+  (flex center, maxWidth 420, maxHeight 85% com `ScrollView`), dentro de um
+  `KeyboardAvoidingView` (`padding` no iOS) pro teclado não cobrir o "Nome".
+  Sem gesto de arrastar-pra-fechar.
 - **Fixado no Expo SDK 54** (compatível com o Expo Go da App Store). Não atualizar
   por impulso.
 - Ícones via **emoji**; alias **`@/` → `src/`**; rotas finas em `app/`; tipos isolados
@@ -75,13 +87,16 @@ A casca é navegável **e já cria/persiste** mini-apps (ainda sem editar/exclui
 
 ## Últimas mudanças grandes
 
-1. **V0.2:** persistência (`useStorage` + AsyncStorage; `useApps` sobre
+1. **Moldura do "+ Novo":** virou **modal centralizado** (card no meio + fundo
+   embaçado com `expo-blur`), substituindo a folha de baixo que travava no rodapé no
+   iPhone/tablet. `GlobalBar` no grupo `(main)`; `novo` como `transparentModal`.
+   Conteúdo das 2 etapas reaproveitado.
+2. **V0.2:** persistência (`useStorage` + AsyncStorage; `useApps` sobre
    `apps:registro` com `addApp`) + fluxo "+ Novo" em 2 etapas que cria e persiste.
-   Ícone do slot vazio virou quadradinho tracejado.
-2. **V0.1:** Home/launcher navegável (grade + "Novo" + barra global + mini-app em
+3. **V0.1:** Home/launcher navegável (grade + "Novo" + barra global + mini-app em
    tela cheia); substituiu o scaffold de 3 abas.
-3. Decisão de arquitetura: o app é um **lançador** (docs reconciliados).
-4. Downgrade SDK 56 → 54 + fix do tema (`@react-navigation/native`).
+4. Decisão de arquitetura: o app é um **lançador** (docs reconciliados).
+5. Downgrade SDK 56 → 54 + fix do tema (`@react-navigation/native`).
 
 ## Pendências / pontos de atenção
 
@@ -89,6 +104,8 @@ A casca é navegável **e já cria/persiste** mini-apps (ainda sem editar/exclui
   slots customizáveis/long-press; filtro por tipo; pesquisa funcional.
 - **Fase 2:** interiores dos tipos — ligar `MiniAppHost` ao `src/features/<tipo>/`
   e persistir conteúdo em `app:<id>:...`.
+- "+ Novo": fecha tocando fora do card (sem gesto de arrastar, por decisão). No
+  Android o blur depende de `experimentalBlurMethod` (iOS é nativo).
 - `navbar:slots` ainda não persistido (barra é fixa por ora).
 - `src/features/skincare` e `figurinhas` são **stubs** não usados ainda.
 - Sem `babel.config.js` / `metro.config.js` (usa os defaults do Expo).
